@@ -1,0 +1,19 @@
+description: Ultralytics licence-plate-detection model trained on /kaggle/working/licence.yaml
+author: Ultralytics
+date: '2026-08-22T10:59:14.204954'
+version: 8.4.37
+license: AGPL-3.0 License (https://ultralytics.com/license)
+docs: https://docs.ultralytics.com
+stride: 32
+task: detect
+batch: 1
+imgsz:
+- 320
+- 320
+names:
+  0: license_plate
+args:
+  batch: 1
+  half: true
+channels: 3
+end2end: false

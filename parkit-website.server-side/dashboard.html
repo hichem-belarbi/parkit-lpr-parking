@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mes réservations — PARKit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/parking.css">
+<style>
+  /* Style spécifique pour la plaque d'immatriculation tunisienne */
+  .plate-input-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .plate-input-container input {
+    text-align: center;
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-size: 16px;
+  }
+  .plate-badge-tn {
+    background-color: var(--bg-surface-2, #1e293b);
+    color: var(--primary, #38bdf8);
+    border: 1px solid var(--border, #334155);
+    border-radius: 8px;
+    padding: 0 12px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+    user-select: none;
+  }
+  /* --- Modal de confirmation --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-card {
+  background: var(--bg3, #1e293b);
+  border: 1px solid var(--border2, #334155);
+  border-radius: 16px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  transform: scale(0.92);
+  transition: transform 0.25s ease;
+}
+
+.modal-overlay.show .modal-card {
+  transform: scale(1);
+}
+
+.modal-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+}
+
+.modal-card h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text1, #f8fafc);
+}
+
+.modal-card p {
+  margin: 0 0 20px;
+  font-size: 13.5px;
+  color: var(--text3, #94a3b8);
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.modal-actions button {
+  flex: 1;
+  height: 40px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+</style>
+</head>
+<body>
+
+<div class="ticker"><div class="ticker-track" id="tickerTrack"></div></div>
+
+<nav id="mainNav">
+  <a href="index.html" class="nav-logo">
+    <h2 class="sr-only">P</h2>
+    PARKit
+  </a>
+  <div class="nav-links">
+    <a href="index.html#features">Fonctionnalités</a>
+    <a href="index.html#how">Comment ça marche</a>
+    <a href="index.html#pricing">Tarifs</a>
+    <a href="index.html#faq">FAQ</a>
+  </div>
+  <div class="nav-cta">
+    <a href="dashboard.html" class="btn-ghost current">Mes réservations</a>
+    <a href="reserve.html" class="btn-primary">Réserver</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Ouvrir le menu" aria-expanded="false"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html#features">Fonctionnalités</a>
+  <a href="index.html#how">Comment ça marche</a>
+  <a href="index.html#pricing">Tarifs</a>
+  <a href="index.html#faq">FAQ</a>
+  <div class="m-btns">
+    <a href="dashboard.html" class="btn-ghost">Mes réservations</a>
+    <a href="reserve.html" class="btn-primary">Réserver</a>
+  </div>
+</div>
+
+<section class="page-hero">
+  <div class="section-tag">Suivi</div>
+  <h1>Mes réservations</h1>
+  <p>Recherchez avec votre plaque d'immatriculation ou votre code de réservation pour voir le statut, la fenêtre d'accès, ou annuler.</p>
+</section>
+
+<div class="tool-shell">
+
+  <div class="form-card">
+    <div class="field-row" style="align-items:flex-end; gap: 20px;">
+      
+
+
+      <!-- Saisie Code Réservation -->
+      <div class="field" style="margin-bottom:0; flex: 1;">
+        <label for="searchCode">Code de réservation</label>
+        <input type="text" id="searchCode" placeholder="ex : PN-3664A0" style="height: 42px;">
+      </div>
+
+    </div>
+
+    <button id="searchBtn" class="btn-hero" style="margin-top:20px;justify-content:center;width:100%">
+      Rechercher
+      <svg viewBox="0 0 16 16" width="16" height="16"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="2"/><line x1="11" y1="11" x2="14" y2="14" stroke="currentColor" stroke-width="2"/></svg>
+    </button>
+    <div id="searchError" class="form-error" style="margin-top:14px"></div>
+  </div>
+
+  <div id="resultsWrap" style="margin-top:24px"></div>
+
+</div>
+<!-- Modal de Confirmation d'Annulation -->
+<div id="cancelModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-icon">
+      <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <h3>Confirmer l'annulation</h3>
+    <p id="modalText">Voulez-vous vraiment annuler cette réservation ?</p>
+    <div class="modal-actions">
+      <button id="modalBtnCancel" class="btn-ghost">Non, garder</button>
+      <button id="modalBtnConfirm" class="btn-danger">Oui, annuler</button>
+    </div>
+  </div>
+</div>
+<footer style="padding:24px max(48px, calc((100vw - var(--max-w)) / 2));border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+  <div style="font-size:13px;color:var(--text3)">© 2026 PARKit.</div>
+  <div style="display:flex;align-items:center;gap:20px">
+    <a href="index.html" class="footer-link">Accueil</a>
+    <a href="reserve.html" class="footer-link">Réserver</a>
+    <a href="feedback.html" class="footer-link">Avis</a>
+  </div>
+</footer>
+
+<script src="js/common.js"></script>
+<script>
+const statusLabels = {
+  confirmed: 'Confirmée', 
+  checked_in: 'Entrée validée', 
+  completed: 'Terminée',
+  expired: 'Expirée', 
+  cancelled: 'Annulée',
+};
+
+const searchBtn = document.getElementById('searchBtn');
+const errorBox = document.getElementById('searchError');
+const resultsWrap = document.getElementById('resultsWrap');
+
+
+
+async function doSearch() {
+  errorBox.classList.remove('show');
+  resultsWrap.innerHTML = '';
+  
+  
+  const code = document.getElementById('searchCode').value.trim();
+
+
+
+  if ( !code) {
+    errorBox.textContent = 'Indiquez un code de réservation.';
+    errorBox.classList.add('show');
+    return;
+  }
+
+  searchBtn.disabled = true;
+  searchBtn.innerHTML = '<span class="spinner"></span> Recherche...';
+
+  try {
+    const params = new URLSearchParams();
+    params.set('code', code);
+
+    const res = await fetch(`api/reservations.php?${params}`);
+    const rawText = await res.text();
+    let data;
+
+    try {
+      data = JSON.parse(rawText);
+    } catch (e) {
+      throw new Error("Réponse serveur invalide (non-JSON).");
+    }
+
+    if (!res.ok) {
+      errorBox.textContent = data.error || 'Erreur lors de la recherche.';
+      errorBox.classList.add('show');
+      return;
+    }
+
+    renderResults(data.reservations || []);
+
+  } catch (e) {
+    errorBox.textContent = "Impossible de contacter le serveur (api/reservations.php).";
+    errorBox.classList.add('show');
+  } finally {
+    searchBtn.disabled = false;
+    searchBtn.innerHTML = 'Rechercher <svg viewBox="0 0 16 16" width="16" height="16"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="2"/><line x1="11" y1="11" x2="14" y2="14" stroke="currentColor" stroke-width="2"/></svg>';
+  }
+}
+
+function renderResults(list) {
+  if (!list.length) {
+    resultsWrap.innerHTML = `<div class="form-card" style="text-align:center;color:var(--text3);font-size:14px">Aucune réservation trouvée pour ces critères.</div>`;
+    return;
+  }
+  resultsWrap.innerHTML = list.map(r => `
+    <div class="res-card">
+      <div class="res-card-top">
+        <div>
+          <div class="res-code">${r.code}</div>
+          <div class="res-plate" style="margin-top:8px">${r.plate}</div>
+        </div>
+        <span class="badge badge-${r.status}">${statusLabels[r.status] || r.status}</span>
+      </div>
+      <div class="res-meta">
+        <div><div class="m-lbl">Zone</div><div class="m-val">${r.zone_label}</div></div>
+        <div><div class="m-lbl">Date</div><div class="m-val">${r.reservation_date}</div></div>
+        <div><div class="m-lbl">Créneau</div><div class="m-val">${r.start_time} – ${r.ends_at}</div></div>
+        <div><div class="m-lbl">Limite retard</div><div class="m-val">${r.grace_deadline}</div></div>
+      </div>
+      ${r.status === 'confirmed' ? `<div class="res-actions"><button class="link-btn" onclick="cancelReservation('${r.code}')">Annuler la réservation</button></div>` : ''}
+    </div>
+  `).join('');
+}
+
+async function cancelReservation(code) {
+  if (!confirm(`Voulez-vous vraiment annuler la réservation ${code} ?`)) return;
+  try {
+    const res = await fetch('api/cancel.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code }),
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Erreur lors de l’annulation.'); return; }
+    doSearch();
+  } catch (e) {
+    alert("Impossible de contacter le serveur.");
+  }
+}
+let targetCodeToCancel = null;
+
+const cancelModal = document.getElementById('cancelModal');
+const modalText = document.getElementById('modalText');
+const modalBtnCancel = document.getElementById('modalBtnCancel');
+const modalBtnConfirm = document.getElementById('modalBtnConfirm');
+
+// 1. Déclencher l'ouverture de la modale au lieu du confirm() natif
+function requestCancel(code) {
+  targetCodeToCancel = code;
+  modalText.textContent = `Voulez-vous vraiment annuler la réservation ${code} ?`;
+  cancelModal.classList.add('show');
+}
+
+// 2. Fermer la modale si l'utilisateur annule
+modalBtnCancel.addEventListener('click', () => {
+  cancelModal.classList.remove('show');
+  targetCodeToCancel = null;
+});
+
+// 3. Exécuter l'annulation si l'utilisateur confirme
+modalBtnConfirm.addEventListener('click', async () => {
+  if (!targetCodeToCancel) return;
+
+  const code = targetCodeToCancel;
+  cancelModal.classList.remove('show');
+
+  try {
+    const res = await fetch('api/cancel.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: code })
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.status === 'success') {
+      // Recharger la recherche pour mettre à jour l'affichage
+      doSearch();
+    } else {
+      alert(data.error || "Erreur lors de l'annulation.");
+    }
+  } catch (err) {
+    alert("Impossible de contacter le serveur.");
+  } finally {
+    targetCodeToCancel = null;
+  }
+});
+searchBtn.addEventListener('click', doSearch);
+[ document.getElementById('searchCode')].forEach(el => {
+  el.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+});
+</script>
+</body>
+</html>

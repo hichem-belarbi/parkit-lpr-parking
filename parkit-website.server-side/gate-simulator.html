@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulateur de borne — PARKit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/parking.css">
+</head>
+<body>
+
+<div class="ticker"><div class="ticker-track" id="tickerTrack"></div></div>
+
+<nav id="mainNav">
+  <a href="index.html" class="nav-logo">
+    <h2 class="sr-only">P</h2>
+    PARKit
+  </a>
+  <div class="nav-links">
+    <a href="index.html#features">Fonctionnalités</a>
+    <a href="index.html#lpr">Reconnaissance de plaque</a>
+    <a href="index.html#faq">FAQ</a>
+  </div>
+  <div class="nav-cta">
+    <a href="dashboard.html" class="btn-ghost">Mes réservations</a>
+    <a href="reserve.html" class="btn-primary">Réserver</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Ouvrir le menu" aria-expanded="false"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html#features">Fonctionnalités</a>
+  <a href="index.html#lpr">Reconnaissance de plaque</a>
+  <a href="index.html#faq">FAQ</a>
+  <div class="m-btns">
+    <a href="dashboard.html" class="btn-ghost">Mes réservations</a>
+    <a href="reserve.html" class="btn-primary">Réserver</a>
+  </div>
+</div>
+
+<section class="page-hero">
+  <div class="section-tag">Démo technique</div>
+  <h1>Simulateur de borne d'entrée</h1>
+  <p>Reproduit l'appel que ferait la caméra de reconnaissance de plaque à la barrière : elle envoie la plaque lue, le serveur répond « accès accordé » ou « refusé ».</p>
+</section>
+
+<div class="tool-shell">
+  <div class="form-card">
+    <div class="field">
+      <label for="simPlate">Plaque lue par la caméra</label>
+      <input type="text" id="simPlate" placeholder="ex : 123 TUN 4567">
+    </div>
+    <div class="field">
+      <label for="simTime">Heure simulée (optionnel — sinon "maintenant")</label>
+      <input type="time" id="simTime">
+      <div class="hint">Utile pour tester le comportement au-delà du délai de retard.</div>
+    </div>
+    <button id="simBtn" class="btn-hero btn-full">
+      Simuler le passage à la barrière
+    </button>
+    <div id="gateResult"></div>
+  </div>
+
+  <div class="form-card" style="margin-top:20px">
+    <div class="section-tag" style="margin-bottom:10px">Pour les curieux</div>
+    <p style="font-size:13.5px;color:var(--text2);line-height:1.7;font-weight:300">
+      Cette page appelle <code style="color:var(--sky2)">POST /api/verify_plate.php</code> avec <code style="color:var(--sky2)">{ plate }</code>.
+      C'est exactement l'appel qu'un pipeline de reconnaissance de plaque (détection + OCR, tournant par exemple sur un Raspberry Pi)
+      ferait en HTTP juste après avoir lu une plaque à la caméra, avant d'ouvrir ou non la barrière.
+    </p>
+  </div>
+</div>
+
+<footer style="padding:24px max(48px, calc((100vw - var(--max-w)) / 2));border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+  <div style="font-size:13px;color:var(--text3)">© 2026 PARKit.</div>
+  <div style="display:flex;align-items:center;gap:20px">
+    <a href="index.html" class="footer-link">Accueil</a>
+    <a href="reserve.html" class="footer-link">Réserver</a>
+    <a href="dashboard.html" class="footer-link">Mes réservations</a>
+  </div>
+</footer>
+
+<script src="js/common.js"></script>
+<script>
+const simBtn = document.getElementById('simBtn');
+const gateResult = document.getElementById('gateResult');
+
+simBtn.addEventListener('click', async () => {
+  const plate = document.getElementById('simPlate').value.trim();
+  const time = document.getElementById('simTime').value;
+  if (!plate) return;
+
+  const payload = { plate };
+  if (time) {
+    const today = new Date().toISOString().slice(0,10);
+    payload.timestamp = `${today} ${time}:00`;
+  }
+
+  simBtn.disabled = true;
+  simBtn.innerHTML = '<span class="spinner"></span> Vérification...';
+  gateResult.innerHTML = '';
+
+  try {
+    const res = await fetch('api/verify_plate.php', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    if (data.access) {
+      gateResult.innerHTML = `
+        <div class="gate-result granted">
+          <div class="gr-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><div class="gr-title">Accès accordé — barrière ouverte</div><div class="gr-msg">${data.message || ''} ${data.reservation_code ? '(' + data.reservation_code + ')' : ''}</div></div>
+        </div>`;
+    } else {
+      gateResult.innerHTML = `
+        <div class="gate-result denied">
+          <div class="gr-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+          <div><div class="gr-title">Accès refusé</div><div class="gr-msg">${data.reason || ''}</div></div>
+        </div>`;
+    }
+  } catch (err) {
+    gateResult.innerHTML = `
+      <div class="gate-result denied">
+        <div class="gr-icon">!</div>
+        <div><div class="gr-title">Backend non connecté</div><div class="gr-msg">Impossible de contacter api/verify_plate.php.</div></div>
+      </div>`;
+  } finally {
+    simBtn.disabled = false;
+    simBtn.textContent = 'Simuler le passage à la barrière';
+  }
+});
+
+document.getElementById('simPlate').addEventListener('keydown', e => { if (e.key === 'Enter') simBtn.click(); });
+</script>
+</body>
+</html>

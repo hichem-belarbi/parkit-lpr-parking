@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PARKit — Réservez votre place de parking</title>
+<meta name="description" content="Réservez une place de parking en ligne avec accès automatique par reconnaissance de plaque.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/parking.css">
+<style>
+  /* Styles dédiés à l'affichage clair des disponibilités */
+  .btn-refresh {
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border, #2a364f);
+    color: var(--text, #e2e8f0);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-refresh:hover:not(:disabled) {
+    border-color: var(--sky, #38bdf8);
+    color: var(--sky, #38bdf8);
+    background: rgba(56, 189, 248, 0.1);
+  }
+  .btn-refresh:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  /* Cartes de zones pour une lisibilité maximale */
+  .zone-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .zone-card-item {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .zone-card-header {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text3, #94a3b8);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .zone-card-value {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--sky, #38bdf8);
+  }
+  .zone-card-capacity {
+    font-size: 11px;
+    color: var(--text3, #64748b);
+    margin-top: 2px;
+  }
+  .zone-progress-bg {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .zone-progress-fill {
+    height: 100%;
+    background: var(--sky, #38bdf8);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+</style>
+</head>
+<body>
+
+<div class="ticker">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<!-- NAVIGATION -->
+<nav id="mainNav">
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-mark">
+      <h2 class="sr-only">P</h2>
+    </div>
+    PARKit
+  </a>
+  <div class="nav-links">
+    <a href="#how">Comment ça marche</a>
+    <a href="#lpr">Reconnaissance de plaque</a>
+    <a href="#pricing">Tarifs</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <div class="nav-cta">
+    <a href="dashboard.html" class="btn-ghost">Mes réservations</a>
+    <a href="reserve.html" class="btn-primary">Réserver une place</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Ouvrir le menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#how">Comment ça marche</a>
+  <a href="#lpr">Reconnaissance de plaque</a>
+  <a href="#pricing">Tarifs</a>
+  <a href="#faq">FAQ</a>
+  <div class="m-btns">
+    <a href="dashboard.html" class="btn-ghost">Mes réservations</a>
+    <a href="reserve.html" class="btn-primary">Réserver une place</a>
+  </div>
+</div>
+
+<!-- HERO SECTION -->
+<section class="hero" id="home">
+  <div class="hero-content silk-reveal-left">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      Accès automatique par reconnaissance de plaque
+    </div>
+    <h1>Réservez votre<br>place, <span>la barrière<br>vous reconnaît</span></h1>
+    <p class="hero-sub">Choisissez un créneau, indiquez votre plaque d'immatriculation, payez en ligne. À votre arrivée, notre caméra lit votre plaque et ouvre l'accès automatiquement.</p>
+    <div class="hero-btns">
+      <a href="reserve.html" class="btn-hero">
+        Réserver maintenant
+        <svg viewBox="0 0 16 16"><line x1="3" y1="8" x2="13" y2="8"/><polyline points="9,4 13,8 9,12"/></svg>
+      </a>
+      <a href="#how" class="btn-outline">Comment ça marche</a>
+    </div>
+  </div>
+
+  <!-- DASHBOARD WIDGET DISPONIBILITÉ EN DIRECT -->
+  <div class="hero-visual silk-reveal-right">
+    <div class="dash-card">
+      <div class="dash-topbar" style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="dash-dots">
+            <span style="background:#E85A5A"></span>
+            <span style="background:#F0A030"></span>
+            <span style="background:#3DCC8E"></span>
+          </div>
+          <span class="dash-title-bar">DISPONIBILITÉ</span>
+        </div>
+        <button id="btnRefreshStats" onclick="fetchStatsWithCooldown()" class="btn-refresh">
+          
+          <span id="refreshBtnText">Actualiser</span>
+        </button>
+      </div>
+
+      <div class="dash-body">
+        <div class="dash-stats">
+          <div class="dash-stat">
+            <div class="dash-stat-label">Places disponibles</div>
+            <div class="dash-stat-val" style="color:var(--green, #3DCC8E);" id="heroFreeSpots">--</div>
+            <div class="dash-stat-change" style="color:var(--text3); font-size:12px; font-weight:600;">
+              sur <span id="heroTotalSpots">--</span> places au total
+            </div>
+          </div>
+          <div class="dash-stat">
+            <div class="dash-stat-label">Taux d'occupation</div>
+            <div class="dash-stat-val" id="heroOccupancy">--%</div>
+            <div class="dash-stat-change" style="color:var(--text3)">en direct</div>
+          </div>
+        </div>
+
+        <!-- AFFICHAGE CLAIR PAR ZONE -->
+        <div class="chart-wrap" style="margin-top:16px;">
+          <div class="chart-head" style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="chart-head-title">Détail par zone</span>
+            <span style="font-size:11px; color:var(--text3);">Places libres / Capacité</span>
+          </div>
+          
+          <div class="zone-cards-grid" id="heroZoneCards">
+            <div style="grid-column: 1 / -1; text-align:center; font-size:12px; color:var(--text3); padding:12px;">
+              Chargement des zones...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS GÉNÉRALES -->
+<section class="stats-section">
+  <div class="stat-block">
+    <div class="stat-icon">
+      <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="12" rx="2"/><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/></svg>
+    </div>
+    <div class="stat-num" id="statTotalSpots">--</div>
+    <div class="stat-label">Capacité totale du parking</div>
+  </div>
+  <div class="stat-block">
+    <div class="stat-icon">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+    </div>
+    <div class="stat-num">0.3s</div>
+    <div class="stat-label">Temps moyen d'ouverture</div>
+  </div>
+  <div class="stat-block">
+    <div class="stat-icon" style="background:rgba(61,204,142,.1);border-color:rgba(61,204,142,.15)">
+      <svg viewBox="0 0 24 24" style="stroke:var(--green)"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+    </div>
+    <div class="stat-num">99.1%</div>
+    <div class="stat-label">Précision de lecture LPR</div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="features-section" id="how">
+  <div class="features-header silk-reveal">
+    <div class="section-tag">Simple et rapide</div>
+    <h2 class="section-title">Comment ça marche</h2>
+  </div>
+  <div class="steps-grid">
+    <div class="step-card silk-reveal">
+      <div class="step-num">1</div>
+      <h3>Choisissez un créneau</h3>
+      <p>Sélectionnez la zone, la date et la durée dont vous avez besoin.</p>
+    </div>
+    <div class="step-card silk-reveal">
+      <div class="step-num">2</div>
+      <h3>Indiquez votre plaque</h3>
+      <p>Série normale (تونس), RS ou Gouvernement — votre plaque sert de clé d'accès.</p>
+    </div>
+    <div class="step-card silk-reveal">
+      <div class="step-num">3</div>
+      <h3>Payez en ligne</h3>
+      <p>Confirmation immédiate avec votre code de réservation.</p>
+    </div>
+    <div class="step-card silk-reveal">
+      <div class="step-num">4</div>
+      <h3>Arrivez, la barrière s'ouvre</h3>
+      <p>La caméra à l'entrée lit votre plaque et valide votre accès automatiquement.</p>
+    </div>
+  </div>
+</section>
+
+<!-- LPR / RECONNAISSANCE -->
+<section class="security-section" id="lpr">
+  <div class="security-inner">
+    <div>
+      <div class="section-tag">Reconnaissance de plaque</div>
+      <h2 class="section-title">Votre plaque, c'est votre clé</h2>
+      <p class="section-sub">À l'approche de la barrière, la caméra analyse la plaque d'immatriculation et compare votre réservation avec la base de données en temps réel.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+  <div style="text-align:center">
+    <div class="section-tag">Tarifs simples</div>
+    <h2 class="section-title">Vous ne payez que le temps réservé</h2>
+  </div>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-plan">À l'heure</div>
+      <div class="price-amount"><span class="price-num">2.5</span><sup style="font-size:16px;margin-left:4px">DT/h</sup></div>
+      <a href="reserve.html" class="price-btn price-btn-primary" style="display:flex;align-items:center;justify-content:center;text-decoration:none;margin-top:16px;">Réserver</a>
+    </div>
+    <div class="price-card featured">
+      <div class="featured-badge">Le plus choisi</div>
+      <div class="price-plan">Journée complète</div>
+      <div class="price-amount"><span class="price-num">15</span><sup style="font-size:16px;margin-left:4px">DT</sup></div>
+      <a href="reserve.html" class="price-btn price-btn-primary" style="display:flex;align-items:center;justify-content:center;text-decoration:none;margin-top:16px;">Réserver</a>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div class="faq-inner">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div style="text-align:left">
+        <div class="section-tag">Des questions ?</div>
+        <h2 class="section-title">Questions fréquentes</h2>
+      </div>
+    </div>
+    <div class="faq-list" id="faqList"></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="padding:24px max(48px, calc((100vw - var(--max-w)) / 2));border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+  <div style="font-size:13px;color:var(--text3)">© 2026 PARKit. Tous droits réservés.</div>
+  <div style="display:flex;align-items:center;gap:20px">
+    <a href="reserve.html" class="footer-link">Réserver</a>
+    <a href="dashboard.html" class="footer-link">Mes réservations</a>
+    <a href="feedback.html" class="footer-link">Avis</a>
+    <a href="gate-simulator.html" class="footer-link">Simulateur borne</a>
+  </div>
+</footer>
+
+<script src="js/common.js"></script>
+<script>
+let isCooldown = false;
+const COOLDOWN_SECONDS = 1;
+
+// Gestion du bouton de rafraîchissement avec un cooldown de 3s
+async function fetchStatsWithCooldown() {
+  if (isCooldown) return;
+
+  const btn = document.getElementById('btnRefreshStats');
+  const btnText = document.getElementById('refreshBtnText');
+
+  isCooldown = true;
+  btn.disabled = true;
+
+  await loadRealStats();
+
+  let remaining = COOLDOWN_SECONDS;
+  btnText.innerHTML = `<span class="spinner" style="width:14px;height:14px;border:2px solid var(--text3);border-top-color:var(--sky);border-radius:50%;display:inline-block;animation:spin 1s linear infinite;margin-right:6px"></span>`;
+
+  const interval = setInterval(() => {
+    remaining--;
+    if (remaining > 0) {
+      btnText.innerHTML = `<span class="spinner" style="width:14px;height:14px;border:2px solid var(--text3);border-top-color:var(--sky);border-radius:50%;display:inline-block;animation:spin 1s linear infinite;margin-right:6px"></span>`;
+    } else {
+      clearInterval(interval);
+      isCooldown = false;
+      btn.disabled = false;
+      btnText.innerText = 'Actualiser';
+    }
+  }, 1000);
+}
+
+// Chargement et affichage clair des places disponibles et de la capacité
+async function loadRealStats() {
+  try {
+    const res = await fetch('api/get_stats.php');
+    const data = await res.json();
+
+    if (data.status === 'success' && data.stats) {
+      const s = data.stats;
+      console.log("Statistiques reçues :", s);
+      document.getElementById('heroFreeSpots').innerText = s.free_spots;
+      document.getElementById('heroTotalSpots').innerText = s.total_spots;
+      document.getElementById('heroOccupancy').innerText = s.occupancy_rate + '%';
+      document.getElementById('statTotalSpots').innerText = s.total_spots + ' places';
+
+      // Affichage sous forme de cartes d'état par zone
+      const zoneContainer = document.getElementById('heroZoneCards');
+      if (s.zones && s.zones.length > 0) {
+        zoneContainer.innerHTML = s.zones.map(z => `
+          <div class="zone-card-item">
+            <div>
+              <div class="zone-card-header">Zone ${z.code}</div>
+              <div class="zone-card-value">${z.free} <span style="font-size:11px; font-weight:normal; color:var(--text3);">libres</span></div>
+              <div class="zone-card-capacity">Capacité : ${z.capacity} places</div>
+            </div>
+            <div class="zone-progress-bg" title="${z.percent_free}% de places disponibles">
+              <div class="zone-progress-fill" style="width: ${z.percent_free}%;"></div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+  } catch (err) {
+    console.error("Erreur lors du chargement des statistiques :", err);
+  }
+}
+
+buildFaq([
+  {q:"Que se passe-t-il si j'arrive en retard ?", a:"Chaque réservation inclut un délai de grâce. Tant que vous arrivez dans cette fenêtre, la barrière s'ouvre normalement."},
+  {q:"Comment la barrière reconnaît-elle ma voiture ?", a:"Une caméra à l'entrée lit votre plaque et vérifie instantanément si une réservation correspondante est valide."},
+  {q:"Puis-je annuler ou modifier ma réservation ?", a:"Oui, vous pouvez gérer vos réservations à tout moment depuis le tableau de bord avec votre code de réservation."}
+]);
+
+// Exécution automatique dès le chargement de la page
+document.addEventListener('DOMContentLoaded', () => {
+  loadRealStats();
+});
+</script>
+</body>
+</html>

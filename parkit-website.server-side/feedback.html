@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Votre avis — PARKit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/parking.css">
+</head>
+<body>
+
+<div class="ticker"><div class="ticker-track" id="tickerTrack"></div></div>
+
+<nav id="mainNav">
+  <a href="index.html" class="nav-logo">
+    <h2 class="sr-only">P</h2>
+    PARKit
+  </a>
+  <div class="nav-links">
+    <a href="index.html#features">Fonctionnalités</a>
+    <a href="index.html#how">Comment ça marche</a>
+    <a href="index.html#pricing">Tarifs</a>
+    <a href="index.html#faq">FAQ</a>
+  </div>
+  <div class="nav-cta">
+    <a href="dashboard.html" class="btn-ghost">Mes réservations</a>
+    <a href="reserve.html" class="btn-primary">Réserver</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Ouvrir le menu" aria-expanded="false"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html#features">Fonctionnalités</a>
+  <a href="index.html#how">Comment ça marche</a>
+  <a href="index.html#pricing">Tarifs</a>
+  <a href="index.html#faq">FAQ</a>
+  <div class="m-btns">
+    <a href="dashboard.html" class="btn-ghost">Mes réservations</a>
+    <a href="reserve.html" class="btn-primary">Réserver</a>
+  </div>
+</div>
+
+<section class="page-hero">
+  <div class="section-tag">Retour d'expérience</div>
+  <h1>Aidez-nous à améliorer<br>le parking</h1>
+  <p>Disponibilité, propreté, fiabilité de l'accès automatique — votre avis compte et est visible par les autres utilisateurs.</p>
+</section>
+
+<div class="tool-shell">
+
+  <div class="form-card">
+    <div id="fbError" class="form-error"></div>
+    <div id="fbSuccess" class="form-success"></div>
+    <form id="fbForm">
+      <div class="field">
+        <label>Votre note</label>
+        <div class="star-input" id="starInput">
+          <button type="button" data-val="1"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg></button>
+          <button type="button" data-val="2"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg></button>
+          <button type="button" data-val="3"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg></button>
+          <button type="button" data-val="4"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg></button>
+          <button type="button" data-val="5"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg></button>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="fbName">Nom (optionnel)</label>
+          <input type="text" id="fbName" placeholder="Anonyme">
+        </div>
+        <div class="field">
+          <label for="fbCategory">Catégorie</label>
+          <select id="fbCategory">
+            <option value="disponibilite">Disponibilité des places</option>
+            <option value="acces">Accès / reconnaissance de plaque</option>
+            <option value="proprete">Propreté</option>
+            <option value="app">Application / réservation</option>
+            <option value="general" selected>Général</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="fbMessage">Votre message</label>
+        <textarea id="fbMessage" placeholder="Décrivez votre expérience..." maxlength="500"></textarea>
+      </div>
+
+      <button type="submit" class="btn-hero btn-full" id="fbSubmit">Envoyer mon avis</button>
+    </form>
+  </div>
+
+  <div style="margin-top:36px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="section-tag" style="margin:0">Avis récents</div>
+      <div id="avgRating" style="font-size:13px;color:var(--text2)"></div>
+    </div>
+    <div id="feedbackList"></div>
+  </div>
+
+</div>
+
+<footer style="padding:24px max(48px, calc((100vw - var(--max-w)) / 2));border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+  <div style="font-size:13px;color:var(--text3)">© 2026 PARKit.</div>
+  <div style="display:flex;align-items:center;gap:20px">
+    <a href="index.html" class="footer-link">Accueil</a>
+    <a href="reserve.html" class="footer-link">Réserver</a>
+    <a href="dashboard.html" class="footer-link">Mes réservations</a>
+  </div>
+</footer>
+
+<script src="js/common.js"></script>
+<script>
+let rating = 0;
+const stars = document.querySelectorAll('#starInput button');
+stars.forEach(btn => {
+  btn.addEventListener('mouseenter', () => paintStars(parseInt(btn.dataset.val)));
+  btn.addEventListener('mouseleave', () => paintStars(rating));
+  btn.addEventListener('click', () => { rating = parseInt(btn.dataset.val); paintStars(rating); });
+});
+function paintStars(n) {
+  stars.forEach(b => b.classList.toggle('active', parseInt(b.dataset.val) <= n));
+}
+
+const fbForm = document.getElementById('fbForm');
+const fbError = document.getElementById('fbError');
+const fbSuccess = document.getElementById('fbSuccess');
+const fbSubmit = document.getElementById('fbSubmit');
+
+fbForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  fbError.classList.remove('show');
+  fbSuccess.classList.remove('show');
+
+  const message = document.getElementById('fbMessage').value.trim();
+  if (!rating) { fbError.textContent = 'Choisissez une note.'; fbError.classList.add('show'); return; }
+  if (!message) { fbError.textContent = 'Écrivez un message.'; fbError.classList.add('show'); return; }
+
+  const payload = {
+    name: document.getElementById('fbName').value.trim() || 'Anonyme',
+    rating, category: document.getElementById('fbCategory').value, message,
+  };
+
+  fbSubmit.disabled = true;
+  fbSubmit.innerHTML = '<span class="spinner"></span> Envoi...';
+
+  try {
+    const res = await fetch('api/feedback.php', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) { fbError.textContent = data.error || 'Erreur.'; fbError.classList.add('show'); return; }
+    fbSuccess.textContent = 'Merci pour votre retour !';
+    fbSuccess.classList.add('show');
+    fbForm.reset(); rating = 0; paintStars(0);
+    loadFeedback();
+  } catch (err) {
+    fbError.textContent = "Impossible de contacter le serveur. Vérifiez que le backend (api/feedback.php) est démarré.";
+    fbError.classList.add('show');
+  } finally {
+    fbSubmit.disabled = false;
+    fbSubmit.textContent = 'Envoyer mon avis';
+  }
+});
+
+async function loadFeedback() {
+  const list = document.getElementById('feedbackList');
+  try {
+    const res = await fetch('api/feedback.php');
+    const data = await res.json();
+    document.getElementById('avgRating').textContent = data.average_rating ? `★ ${data.average_rating} / 5 (${data.count} avis)` : '';
+    if (!data.feedback || !data.feedback.length) {
+      list.innerHTML = `<div class="form-card" style="text-align:center;color:var(--text3);font-size:14px">Aucun avis pour le moment. Soyez le premier !</div>`;
+      return;
+    }
+    list.innerHTML = data.feedback.map(f => `
+      <div class="feedback-item">
+        <div class="fi-top">
+          <div>
+            <span class="fi-name">${f.name || 'Anonyme'}</span>
+            <span class="fi-stars">${'★'.repeat(f.rating)}${'☆'.repeat(5-f.rating)}</span>
+          </div>
+          <span class="fi-date">${f.created_at || ''}</span>
+        </div>
+        <p>${f.message}</p>
+      </div>
+    `).join('');
+  } catch (e) {
+    list.innerHTML = `<div class="form-card" style="text-align:center;color:var(--text3);font-size:14px">Impossible de charger les avis — backend non connecté.</div>`;
+  }
+}
+loadFeedback();
+</script>
+</body>
+</html>
