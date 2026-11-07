@@ -50,7 +50,7 @@ Le pipeline complet, de la détection à la décision, prend environ 0,3 s avant
 
 <table>
   <tr>
-    <td align="center"><img src="imgs/1025.jpg" width="220" alt="Photo d'entrée"></td>
+    <td align="center"><img src="imgs/160.jpg" width="220" alt="Photo d'entrée"></td>
     <td align="center"><img src="imgs/proc_crop.jpg" width="300" alt="Plaque recadrée"></td>
     <td align="center"><img src="imgs/result.jpg" width="300" alt="Résultat annoté"></td>
   </tr>
@@ -61,7 +61,6 @@ Le pipeline complet, de la détection à la décision, prend environ 0,3 s avant
   </tr>
 </table>
 
-L'image annotée suit un code couleur : **vert** = accès accordé, **rouge** = accès refusé, **orange** = plaque détectée mais format non reconnu (`UNVERIFIED PLATE`, comme sur cette capture).
 
 ## Site web
 
